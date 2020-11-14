@@ -27,7 +27,7 @@ function syncFromTo {
 	umountDevice $2
 	mountDevice $1
 	mountDevice $2
-	echo rsync -axHAWXS --numeric-ids --info=progress2 --delete /mnt/$1 /mnt/$2
+	rsync -axHAWXS --numeric-ids --info=progress2 --delete /mnt/$1 /mnt/$2
 	umountDevice $1
 	umountDevice $2
 }
