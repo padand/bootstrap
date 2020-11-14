@@ -28,7 +28,11 @@ function syncFromTo {
 	mountDevice $1
 	mountDevice $2
 	echo "start sync $1 to $2"
-	rsync -axHAWXS --numeric-ids --info=progress2 --delete /mnt/$1 /mnt/$2
+
+	rsync -axHAWXS --numeric-ids --info=progress2 \
+	--delete --delete-excluded --exclude='/.gvfs/' \
+	/mnt/$1/ /mnt/$2/
+
 	echo "done sync $1 to $2"
 	umountDevice $1
 	umountDevice $2
