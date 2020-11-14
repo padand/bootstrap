@@ -1,28 +1,30 @@
 #!/bin/bash
 
-# set -e
-# set -x
+set -e
+#set -x
 
 function mountDevice {
 	mkdir -p /mnt/$1
-	mount | grep /dev/$1 | grep /mnt/$1
-	if [ "$?" -eq 0 ]; then
+	if [[ $(mount | grep /dev/$1 | grep /mnt/$1) ]]; then
 		echo "$1 already mounted"
 	else
 		mount /dev/$1 /mnt/$1
+		echo "$1 was mounted"
 	fi;
 }
 
 function umountDevice {
-	mount | grep /dev/$1 | grep /mnt/$1
-	if [ "$?" -eq 0 ]; then
-		umount /dev/$1
+	if [[ $(mount | grep /dev/$1 | grep /mnt/$1) ]]; then
+		umount /mnt/$1
+		echo "$1 was umounted"
 	else
 		echo "$1 is not mounted"
 	fi;
 }
 
 function syncFromTo {
+	umountDevice $1
+	umountDevice $2
 	mountDevice $1
 	mountDevice $2
 	echo rsync -axHAWXS --numeric-ids --info=progress2 --delete /mnt/$1 /mnt/$2
