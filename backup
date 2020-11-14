@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# set -e
+# set -x
+
+function mountDevice {
+	mkdir -p /mnt/$1
+	mount | grep /dev/$1 | grep /mnt/$1
+	if [ "$?" -eq 0 ]; then
+		echo "$1 already mounted"
+	else
+		mount /dev/$1 /mnt/$1
+	fi;
+}
+
+function umountDevice {
+	mount | grep /dev/$1 | grep /mnt/$1
+	if [ "$?" -eq 0 ]; then
+		umount /dev/$1
+	else
+		echo "$1 is not mounted"
+	fi;
+}
+
+function syncFromTo {
+	mountDevice $1
+	mountDevice $2
+	echo rsync -axHAWXS --numeric-ids --info=progress2 --delete /mnt/$1 /mnt/$2
+	umountDevice $1
+	umountDevice $2
+}
+
+syncFromTo sda1 sdb1
+syncFromTo sda5 sdb5
