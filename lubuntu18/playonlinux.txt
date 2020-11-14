@@ -1,0 +1,66 @@
+sudo dpkg --add-architecture i386
+sudo apt update
+sudo apt install playonlinux
+sudo apt install xterm
+
+======================================
+image stas
+
+Check vulkan installed:
+vulkaninfo
+To install:
+sudo apt-get install libvulkan1 libvulkan1:i386
+
+Install wine 4.0.2, 64 and 32 bit
+Create 64 bit virtual drive "vulkan_seed"
+Install addons to virtual drive: directmusic d3dcompiler_43 d3dx9_43
+Download dxvk 1.5.5
+Place 64-bit DLL in:
+/home/username/.PlayOnLinux/wineprefix/game/c_drive/Windows/System32
+Place 32-bit DLL
+/home/username/.PlayOnLinux/wineprefix/game/c_drive/Windows/syswow64
+
+Wine overrides:
+PlayOnLinux Configure > Select your Virtual Drive > Wine > Configure > Libraries
+Add the following overrides:
+d3d10_1
+d3d11
+dxgi
+d3d10
+d3d10core
+d3d9
+Click Edit, change them from (native,builtin) to (native)
+
+Windows reboot
+
+To enable hud:
+DXVK_HUD=devinfo,fps
+
+======================================
+jedi academy
+
+use wine 3.0.3
+env __GL_ExtensionStringVersion=17700 /usr/share/playonlinux/playonlinux --run "jasp" %F
+
+======================================
+lfs
+
+sudo apt-get install libjpeg62:i386
+use wine 4.0.2
+dxvk 1.5.5
+addons: d3dcompiler_43 d3dx9_43
+
+env DXVK_HUD=devinfo,fps,memory,gpuload /usr/share/playonlinux/playonlinux --run "LFS" %F
+
+======================================
+gothic2
+
+use wine 4.0.2
+dxvk 1.5.5
+addons: directmusic d3dcompiler_43 d3dx9_43
+
+v2:
+
+use wine 5.3 x86
+dxvk 1.6
+addons: directmusic

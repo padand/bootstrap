@@ -1,0 +1,100 @@
+Chromium with VA-API support
+
+# Add PPA
+sudo add-apt-repository ppa:saiarcot895/chromium-beta
+
+# Force install from PPA
+sudo nano /etc/apt/preferences.d/saiarcot895-chromium-beta-pin-1001
+###
+Package: *
+Pin: release o=LP-PPA-saiarcot895-chromium-beta
+Pin-Priority: 1001
+###
+
+sudo apt update
+
+# Install patched browser
+sudo apt install chromium-browser
+
+# Install patched vdpau-va-driver
+# check existing version
+apt policy vdpau-va-driver
+# if it's not installed, install from scratch
+sudo apt install vdpau-va-driver
+# else upgrade
+sudo apt --only-upgrade install vdpau-va-driver
+
+# launch with:
+chromium-browser --ignore-gpu-blocklist --use-gl=desktop
+
+# Enable the Hardware-accelerated video option in Chromium
+# search for the Hardware-accelerated video decode option in chrome://flags and enable it
+# Install h264ify Chrome extension
+
+# Check
+# chrome://media-internals
+
+# widevine support
+cp /opt/google/chrome/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so ~/.config/chromium
+
+# Supress warnings related to google api keys
+sudo nano ~/.profile
+###
+export GOOGLE_API_KEY="no"
+export GOOGLE_DEFAULT_CLIENT_ID="no"
+export GOOGLE_DEFAULT_CLIENT_SECRET="no"
+###
+
+# Optional: follow the extra steps in the PPA info
+
+# UNINSTALL
+
+sudo apt install ppa-purge
+sudo ppa-purge ppa:saiarcot895/chromium-beta
+sudo rm /etc/apt/preferences.d/saiarcot895-chromium-beta-pin-1001
+
+
+########### PPA INFO
+
+== Hardware Video Decoding ==
+
+To enable hardware video decoding, open chrome://flags, search for "Hardware-accelerated video decode", enable the entry, and restart Chromium.
+
+=== Widevine Support ===
+
+The packages in this PPA have support for Widevine inside Chromium enabled. However, you still need to copy some files from Chrome into Chromium for you to use Netflix (or other websites using Encrypted Media Extensions) in Chromium.
+
+1. Download and install Chrome (or extract the necessary files, if you know how to do that).
+2. From the Chrome installation directory (probably /opt/google/chome or something similar), copy libwidevinecdm.so into ~/.config/chromium.
+3. Restart Chromium.
+
+=== API Key ====
+
+Some Chromium features, including Sync, require an API key, which is not included with the packages below. To use these features, please follow the 11 steps at http://www.chromium.org/developers/how-tos/api-keys. Then, open .profile located in your home folder (you will need to see hidden files), and add the following three lines to the end of the file (on a new line):
+
+export GOOGLE_API_KEY="api_key"
+export GOOGLE_DEFAULT_CLIENT_ID="client_id"
+export GOOGLE_DEFAULT_CLIENT_SECRET="client_secret"
+
+Replace what is in the quotes (after the '=' sign in each line) with the appropriate value. You will need to log off and log back on (or restart if you prefer) for Chromium to use the keys.
+
+=== NPAPI Plugins ===
+
+Chromium dropped support for NPAPI plugins. This means that you cannot use the standard Flash (Flash 11.2) available through most methods. Instead, you'll need to install the PPAPI version of Flash through a package.
+
+=== Preventing falling back to the standard version of Chromium ===
+
+Sometimes, this PPA doesn't get updated within a few days of a release, and in some cases, the version of Chromium in the standard Ubuntu repos may be newer than the version provided by the PPA. If you want to prevent apt from updating to the version in the standard Ubuntu repos, add the following three lines into /etc/apt/preferences.d/chromium:
+
+Package: *
+Pin: release o=LP-PPA-saiarcot895-chromium-beta
+Pin-Priority: 700
+
+=== Help ===
+
+If you need help with installing Chromium or notice stuff not working that should normally work, click on my name below in the "Adding this PPA to your system" section.
+
+=== Packaging ===
+
+Packaging for this PPA is at https://github.com/saiarcot895/chromium-ubuntu-build. A separate branch is created for each upstream branch number.
+ More info: https://launchpad.net/~saiarcot895/+archive/ubuntu/chromium-beta

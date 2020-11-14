@@ -1,0 +1,15 @@
+sudo dpkg --add-architecture i386
+sudo apt update
+wget -O - https://dl.winehq.org/wine-builds/winehq.key | sudo apt-key add -
+sudo apt install software-properties-common
+sudo add-apt-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ bionic main'
+
+# Wine 5.0 depends on the FAudio package, which is not included in the default Ubuntu 18.04.
+# We’ll install FAudio from the OBS repository.
+# Enter the command below to import the GPG key and enable the OBS repository
+wget -qO- https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/xUbuntu_18.04/Release.key | sudo apt-key add -
+sudo sh -c 'echo "deb https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/xUbuntu_18.04/ ./" > /etc/apt/sources.list.d/obs.list'
+sudo apt update
+
+sudo apt install --install-recommends winehq-stable
+wine --version

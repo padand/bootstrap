@@ -1,0 +1,121 @@
+DOWNLOAD
+
+1. Identify nvidia VGA
+lspci | grep VGA
+
+2. Download official driver
+
+INSTALL
+
+Install prerequisites:
+sudo dpkg --add-architecture i386
+sudo apt update
+sudo apt install build-essential libc6:i386 libglvnd-dev pkg-config
+
+Disable nouveau driver
+1. blackist
+/etc/modprobe.d/blacklist-nvidia-nouveau.conf
+blacklist nouveau
+options nouveau modeset=0
+2. update kernel initramfs
+sudo update-initramfs -u
+3. reboot
+
+sudo telinit 3
+ctrl + alt + F1
+
+run nvidia installer
+
+sudo ./NVIDIA-Linux-x86_64-390.138.run
+
+reboot
+
+install CUDA
+
+sudo apt install gcc-6
+sudo apt install g++-6
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 70 --slave /usr/bin/g++ g++ /usr/bin/g++-6 --slave /usr/bin/gcov gcov /usr/bin/gcov-6
+sudo update-alternatives --config gcc
+[select 6]
+sudo sh cuda_9.1.85_387.26_linux.run
+# Answer questions following while installation begin
+# You are attempting to install on an unsupported configuration. Do you wish to continue? y
+# Install NVIDIA Accelerated Graphics Driver for Linux-x86_64 387.261? n
+# Install the CUDA 9.1 Toolkit? y
+# leave default location
+# simbolic link: y
+# samples: y
+
+sudo update-alternatives --config gcc
+[select auto]
+
+# set up symlinks for gcc/g++
+sudo ln -s /usr/bin/gcc-6 /usr/local/cuda/bin/gcc
+sudo ln -s /usr/bin/g++-6 /usr/local/cuda/bin/g++
+
+postinstall (https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#post-installation-actions):
+sudo nano ~/.bashrc
+export PATH=/usr/local/cuda-9.1/bin${PATH:+:${PATH}}
+export LD_LIBRARY_PATH=/usr/local/cuda-9.1/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+
+CHECK CUDA
+
+cd ~/NVIDIA_CUDA-9.1_Samples
+make
+cd ~/NVIDIA_CUDA-9.1_Samples/bin/x86_64/linux/release
+./deviceQuery
+
+
+INSTALL FFMPEG (https://developer.nvidia.com/ffmpeg)
+
+git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git
+cd nv-codec-headers
+# you need to be on the branch sdk/8.1
+git checkout n8.1.24.12
+sudo make install
+cd ..
+git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg/
+cd ffmpeg
+git checkout n4.1.6
+./configure --enable-cuda-sdk --enable-cuvid --enable-nvenc --enable-nonfree --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64
+make -j 8
+# add to path
+
+# test
+for i in encoders decoders filters; do
+    echo $i:; ffmpeg -hide_banner -${i} | egrep -i "npp|cuvid|nvenc|cuda|nvdec"
+done
+
+UNINSTALL
+
+1. Locate original installer script
+script --uninstall
+
+2. sudo nvidia-xconfig --restore-original-backup
+
+3. enable nouveau modules
+sudo rm /etc/modprobe.d/blacklist-nvidia-nouveau.conf
+
+EXP GDC Beast
+
+External GPU on older laptop with Ubuntu 18.04.1 and Windows 10 Pro 1909
+
+Many older laptops still have an acceptable CPU, but are lacking in the GPU/graphics area. Hardware is available to allow a desktop GPU to be easily attached to the laptop, at a much lower price than a new laptop. Most external GPU hardware connects with USBc/Thunderbolt, which is not available on most older laptops. Other options, like an M2 or an expresscard connection are available, and will provide the desired graphics upgrade.
+
+The EXP GDC Beast adapter converts from a laptop's expresscard slot to an external PCIe slot, allowing plugin of a desktop GPU. Other versions are available using an M2 adapter, but to attach those, the latop case needs to be opened. Older issues reported with the adapter have been fixed with current Linux kernels and Windows releases. Setup for an external GT 640 GPU (1GB video memory) was trivial: In the BIOS/UEFI settings, turn off the discrete graphics and ensure that the expresscard slot is enabled.
+
+Hardware
+
+The laptop used was a Lenovo W520, with Nvidia 1000M Quadro graphics and an expresscard slot. This is a 2011 64 bit UEFI machine, pre secure boot, dual booting 64 bit Ubuntu 18.04.1 (kernel 4.15) and 64 bit Windows 10 Pro 1909 build 18363.628. The adapter was a Semoic Express Card Mini PCI-E version Expresscard V8.0 EXP GDC Beast PCIe PCI-E PCI laptop external independent video card dock ($40.00 on sale). The power supply was a Dell D220P-01 power supply P/N:MK394 ($20.00). The GPU was a 1GB video memory GT 640. Consider getting/making a case to keep fingers/cables out of the GPU fan.
+
+Ubuntu Setup
+
+Shutdown the Ubuntu 18.04 running on the internal Nvidia Quadro using the 390 driver. On the laptop, plug in the expresscard on the adapter cable. On the adapter, plug in the GPU, and the 6 pin power supply cable. The cable to supply additional power to the GPU from the adapter was not used. Plug in the power supply, whose light stays yellow until the laptop is powered, then it turns green. Start the laptop and select the BIOS/UEFI settings. Ensure the graphics mode is set to internal (not discrete or automatic). Ensure that the expresscard slot is enabled. Save and exit. Start the laptop, it will find the new hardware, and use the existing Nvidia 390 driver (the latest one offered from the standard repositories) on the laptop's display. No additional modules needed to be loaded, no xorg.conf was needed, and no kernel options like pci=nocrs were used.
+
+If a monitor is attached to the external GPU, it will display a screen positioned to the right of the laptop's display. Adjust the screen positions in the Settings/Display section. Now run Software and Updates, select the Additional Drivers tab, and update the Nvidia drivers to the now offered 345 version. Reboot, and Ubuntu should be using the 345 drivers for the GT 640 GPU. Shutting down the laptop will depower the GPU, and put the power supply into standby (yellow light).
+
+Windows Setup
+
+Review the setup video at https://www.youtube.com/watch?v=G0YMBvNFgyE The most valuable part is warning of the long wait with no progress bar on the automatic Windows Nvidia device install). (Plug everything in), boot Windows, let it find the new device, and let it update, drivers. There is no progress bar, so be patient and let it finish. Reboot, and the new device should be seen and used. The laptop screen will be used and if a monitor is attached to the GPU, it will display a second screen to the right of the laptop's display.
+
+No errors were encountered in either setup. Note that the internal Quadro 1000M is a 2GB card, so GPUs up to 2GB probably will not have any problems on this W520. GPUs with larger video memories might have issues. Machines originally released with 32 bit OSes (like the Lenovo W520), might have problems with the PCI buffering at the top of the lower 4G of memory. Solutions are available on support sites like https://egpu.io/forums/pc-setup/fix-dsdt-override-to-correct-error-12/

@@ -1,0 +1,99 @@
+=========================================================
+# Reconfig hda audio pins (PC connector broken)
+sudo apt install alsa-tools-gui
+sudo hdajackretask
+
+select codec Realtek ALC888
+override green line out, rear - not connected
+override gray line out, rear - line out (front)
+Apply now
+Install boot override
+
+# saves a pin config file:
+cat /lib/firmware/hda-jack-retask.fw
+
+# applies override at startup:
+cat /etc/modprobe.d/hda-jack-retask.conf
+
+reboot
+
+# check patch was applied:
+dmesg | grep hda-jack-retask
+
+=========================================================
+# Apple airpods
+
+# follow bluetooth device install steps
+
+sudo apt install pulseaudio
+sudo apt install blueman pulseaudio-module-bluetooth
+
+# Check the following lines exist in /etc/pulse/default.pa
+####
+.ifexists module-bluetooth-discover.so
+load-module module-bluetooth-discover
+.endif
+####
+
+# pulseaudio autostart
+systemctl --user enable pulseaudio
+
+reboot
+
+# enable headset
+# https://askubuntu.com/questions/831331/failed-to-change-profile-to-headset-head-unit/1236379#1236379
+# https://askubuntu.com/questions/985615/bluetooth-profile-locked-to-a2dp-high-quality-audio-sink-but-cannot-change-to/1223200#1223200
+sudo apt install ofono
+# Config pulseaudio to use ofono
+sudo nano /etc/pulse/default.pa
+# change:
+###
+load-module module-bluetooth-discover
+###
+# to
+###
+load-module module-bluetooth-discover headset=ofono
+###
+sudo usermod -aG bluetooth pulse
+sudo nano /etc/dbus-1/system.d/ofono.conf
+###
+<policy user="pulse">
+  <allow send_destination="org.ofono"/>
+</policy>
+###
+sudo apt install ofono-phonesim
+sudo nano /etc/ofono/phonesim.conf
+###
+[phonesim]
+Driver=phonesim
+Address=127.0.0.1
+Port=12345
+###
+
+# test phonesim
+# start
+ofono-phonesim -p 12345 /usr/share/phonesim/default.xml
+# use test script
+git clone git://git.kernel.org/pub/scm/network/ofono/ofono.git
+cd ofono/test
+./enable-modem
+./online-modem
+./list-modems
+
+# autostart phonesim
+sudo apt install ofono-phonesim-autostart
+
+=========================================================
+# FX && noise cancellation
+
+sudo add-apt-repository ppa:mikhailnov/pulseeffects -y
+sudo apt update
+sudo apt install pulseeffects pulseaudio --install-recommends
+
+# noise cancellation
+sudo nano /etc/pulse/default.pa
+####
+load-module module-echo-cancel
+####
+
+reboot

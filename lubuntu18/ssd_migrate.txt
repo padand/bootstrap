@@ -1,0 +1,19 @@
+## Boot into live cd
+#  !!! Careful on replacing the placeholders in the instructions below
+
+1. Create partitions on the ssd for / and /home
+2. Copy files
+Mount partitions
+rsync -avhs --no-compress --progress /media/hd /media/ssd
+# OR sudo cp -Tax /media/hd /media/ssd
+3. edit the /etc/fstab on the ssd to point to the new fs UUID ( you can look it up with blkid )
+4. GRUB
+sudo -s
+for f in sys dev proc ; do mount --bind /$f /media/ssd/$f ; done
+chroot /media/ssd
+grub-install /dev/ssd (!!! ex: /dev/sda without the number)
+update-grub
+5. ??? use boot repair
+sudo add-apt-repository ppa:yannubuntu/boot-repair
+sudo apt-get update
+sudo apt-get install -y boot-repair && boot-repair

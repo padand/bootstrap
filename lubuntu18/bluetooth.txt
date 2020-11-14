@@ -1,0 +1,23 @@
+# ASUS BT-400
+# https://gist.github.com/ssledz/69b7f7b0438e653c08c155e244fdf7d8
+# check folder for .hcd file
+sudo cp BCM20702A1-0b05-17cb.hcd /lib/firmware/brcm/
+
+# reconnect device
+
+dmesg
+###
+[ 3933.879559] usb 2-10: USB disconnect, device number 5
+[ 3937.281050] usb 2-10: new full-speed USB device number 6 using ohci-pci
+[ 3937.529818] usb 2-10: New USB device found, idVendor=0b05, idProduct=17cb, bcdDevice= 1.12
+[ 3937.529821] usb 2-10: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[ 3937.529822] usb 2-10: Product: BCM20702A0
+[ 3937.529823] usb 2-10: Manufacturer: Broadcom Corp
+[ 3937.529824] usb 2-10: SerialNumber: 5CF3709DFD56
+[ 3937.654837] Bluetooth: hci0: BCM: chip id 63
+[ 3937.657872] Bluetooth: hci0: BCM: features 0x07
+[ 3937.675857] Bluetooth: hci0: BCM20702A
+[ 3937.678846] Bluetooth: hci0: BCM20702A1 (001.002.014) build 0000
+[ 3938.746788] Bluetooth: hci0: BCM20702A1 (001.002.014) build 1467
+[ 3938.764794] Bluetooth: hci0: Broadcom Bluetooth Device
+###

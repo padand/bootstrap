@@ -1,0 +1,51 @@
+1. fix wifi DELL
+
+sudo apt-get remove bcmwl-kernel-source broadcom-sta-common broadcom-sta-dkms
+sudo apt-get install firmware-b43-installer
+reboot
+
+2. browser backup and restore
+
+3. bind super key to start (lubuntu)
+
+nano ~/.config/openbox/lubuntu-rc.xml
+ctl+w: lxpanelctl
+key: Super_L
+
+4. restore home data
+rsync -avhs --no-compress --progress source dest
+
+5. setup graphics driver (see graphics.txt)
+
+6. extract to folder
+move extract.desktop to ~/.local/share/applications
+
+7. setup browser hardware acc
+
+8. setup ffmpeg hardware acc
+
+9. setup VLC hardware acc
+tools > preferences > video > output = VDPAU
+tools > preferences > video : deinterlacing = On, mode = Bob?
+nvidia x server settings > powerMizer > Prefer maximum performance
+tools > preferences > input / codecs > hardware-accelerated decoding = VDPAU
+
+10. ignore lid DELL
+sudo nano /etc/systemd/logind.conf
+HandleLidSwitch=ignore
+sudo systemctl restart systemd-logind.service
+sudo  nano /etc/UPower/UPower.conf
+IgnoreLid=true
+sudo service upower restart
+
+11. enable hibernate
+cat /etc/fstab  | grep swap
+sudo nano /etc/default/grub
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash resume=UUID=a89c79be-bad6-4273-acdc-1091a42b39db"
+sudo update-grub
+sudo update-initramfs -u
+
+12. disable touchpad DELL
+crontab -e
+@reboot /usr/bin/synclient TouchpadOff=1
+sudo systemctl enable cron.service

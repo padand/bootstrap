@@ -1,0 +1,47 @@
+14/03/2020
+added pcie aspm off
+sudo nano /etc/default/grub
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash pcie_aspm=off resume=UUID=a89c79be-bad6-4273-acdc-1091a42b39db"
+sudo update-grub
+
+=========================================================
+
+17/03/2020
+Download gcc 7.4.0 to temp
+tar xf gcc-7.4.0.tar.gz
+cd gcc-7.4.0
+contrib/download_prerequisites
+mkdir build && cd build
+
+../configure -v --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu --prefix=/usr/local/gcc-7.4 --enable-checking=release --enable-languages=c,c++,fortran --disable-multilib --program-suffix=-7.4
+
+make -j 4
+sudo make install
+
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 90 --slave /usr/bin/g++ g++ /usr/bin/g++-7 --slave /usr/bin/gcov gcov /usr/bin/gcov-7
+
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/local/gcc-7.4/bin/gcc-7.4 80 --slave /usr/bin/g++ g++ /usr/local/gcc-7.4/bin/g++-7.4 --slave /usr/bin/gcov gcov /usr/local/gcc-7.4/bin/gcov-7.4
+
+sudo update-alternatives --config gcc
+[select gcc 7.4.0]
+
+sudo dkms install -m nvidia -v 440.59
+
+reboot
+
+sudo update-alternatives --config gcc
+[select auto]
+=========================================================
+
+20.03.2020
+sudo apt install openjdk-8-jdk
+sudo update-alternatives --config java
+(choose v8, copy path)
+sudo nano /etc/environment
+JAVA_HOME="copied_path"
+source /etc/environment
+
+=========================================================
+disable touchpad
+
+synclient TouchpadOff=1

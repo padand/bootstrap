@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Extract to folder
+Comment=Extract archive to a folder with the same name
+Exec=file-roller -h %F
+Terminal=false
+Type=Application
+Icon=file-roller
+StartupNotify=true
+MimeType=text/plain;
