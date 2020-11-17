@@ -43,6 +43,10 @@ function syncFromTo {
 syncFromTo sda1 sdb1
 syncFromTo sda5 sdb5
 
+#syncFromTo sdb1 sdc1
+#syncFromTo sdb5 sdc2
+
 # TODO: option to sync without delete, needed for storage
 # TODO: option to define pipelines, eg: sdb5-sdc2,delete; sda4-sdb4,keep
 # TODO: option to choose target at runtime: primary system, secondary system, primary storage, secondary storage
+
