@@ -1,0 +1,68 @@
+### HIGHLY EXPERIMENTAL WIP
+### Backup your whole system before trying
+
+sudo nano /etc/apt/sources.list.d/ubuntu-trusty.list
+###
+deb http://us.archive.ubuntu.com/ubuntu/ trusty main restricted
+deb http://us.archive.ubuntu.com/ubuntu/ trusty-updates main restricted
+deb http://us.archive.ubuntu.com/ubuntu/ trusty universe
+deb http://us.archive.ubuntu.com/ubuntu/ trusty-updates universe
+deb http://security.ubuntu.com/ubuntu trusty-security main restricted
+deb http://security.ubuntu.com/ubuntu trusty-security universe
+###
+
+sudo apt update
+
+# never prefer packages from trusty, except bluez and related
+sudo nano /etc/apt/preferences.d/trusty-pin
+###
+Package: *
+Pin: release n=trusty
+Pin-Priority: 1
+
+Package: bluez*
+Pin: release n=trusty
+Pin-Priority: 1001
+
+Package: libbluetooth*
+Pin: release n=trusty
+Pin-Priority: 1001
+
+Package: bluetooth
+Pin: release n=trusty
+Pin-Priority: 1001
+
+Package: blueman  
+Pin: release n=trusty
+Pin-Priority: 1001
+###
+
+sudo apt remove --purge --autoremove pulseaudio pulseaudio-module-bluetooth
+
+# sudo apt install -s bluez bluez-dbg bluez-alsa bluez-hcidump bluez-audio bluez-utils
+sudo apt install bluez bluez-dbg bluez-alsa bluez-hcidump bluez-audio bluez-utils
+# Y -> install package maintainer's version
+
+# sudo apt -s remove --purge --autoremove blueman bluez-obexd
+sudo apt remove --purge --autoremove blueman bluez-obexd
+
+# sudo apt -s install blueman
+sudo apt install blueman
+
+sudo usermod -aG audio h
+
+sudo nano /etc/asound.conf
+###
+# Bluetooth headset
+defaults.bluealsa {
+     interface "hci0"            # host Bluetooth adapter
+     device "FC:1D:43:DE:C6:C7"  # Bluetooth headset MAC address
+     profile "a2dp"
+}
+###
+sudo rm /lib/systemd/system/alsa-utils.service
+sudo systemctl daemon-reload
+sudo systemctl start alsa-utils.service
+sudo systemctl status alsa-utils.service
+
+alsamixer -D bluealsa
