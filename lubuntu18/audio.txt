@@ -21,12 +21,65 @@ reboot
 dmesg | grep hda-jack-retask
 
 =========================================================
-# Apple airpods
+
+Android audio stream
+
+sudo apt install mumble mumble-server
+sudo dpkg-reconfigure mumble-server
+# set a password, or configure max 2 users on server
+sudo nano /etc/mumble-server.ini
+sudo systemctl restart mumble-server.service
+
+# install Plumble on Android, connect using password
+
+# configure sample rate to 48000
+sudo nano /etc/pulse/daemon.conf
+###
+default-sample-rate = 44100
+alternate-sample-rate = 48000
+avoid-resampling = yes
+###
+
+systemctl --user restart pulseaudio
+
+sudo nano /etc/pulse/default.pa
+###
+
+### Mumble to zoom pipeline
+load-module  module-virtual-sink    sink_name=mumble_out   sink_properties=device.description=mumble_out                              rate=48000 channels=1
+load-module  module-virtual-sink    sink_name=zoom_out     sink_properties=device.description=zoom_out                                rate=48000 channels=1
+load-module  module-virtual-source  source_name=zoom_in    source_properties=device.description=zoom_in    master=mumble_out.monitor  rate=48000 channels=1
+load-module  module-virtual-source  source_name=mumble_in  source_properties=device.description=mumble_in  master=zoom_out.monitor    rate=48000 channels=1
+
+###
+
+systemctl --user restart pulseaudio
+systemctl --user status pulseaudio
+
+# Start mumble client and connect to local server
+mumble mumble://ubu@h-pc.local
+
+# Configure:
+# Audio input:
+#     Device -> mumble in
+#     Transmit -> continuous
+#     Noise supression -> off
+# Audio output:
+#     Device -> mumble out
+#     Positional audio -> disable
+#     Default jitter buffer -> 20 ms
+#     "while other users talk" -> disable
+
+=========================================================
+
+# Apple airpods - HPF NOT WORKING
 
 # follow bluetooth device install steps
 
-sudo apt install pulseaudio
-sudo apt install blueman pulseaudio-module-bluetooth
+sudo add-apt-repository ppa:mikhailnov/pulseeffects -y
+sudo apt update
+apt list --upgradable
+# upgrade pulseaudio
 
 # Check the following lines exist in /etc/pulse/default.pa
 ####
@@ -43,7 +96,10 @@ reboot
 # enable headset
 # https://askubuntu.com/questions/831331/failed-to-change-profile-to-headset-head-unit/1236379#1236379
 # https://askubuntu.com/questions/985615/bluetooth-profile-locked-to-a2dp-high-quality-audio-sink-but-cannot-change-to/1223200#1223200
+
 sudo apt install ofono
+systemctl status ofono.service
+
 # Config pulseaudio to use ofono
 sudo nano /etc/pulse/default.pa
 # change:
@@ -54,13 +110,17 @@ load-module module-bluetooth-discover
 ###
 load-module module-bluetooth-discover headset=ofono
 ###
+
 sudo usermod -aG bluetooth pulse
+# revert: sudo deluser pulse bluetooth
+
 sudo nano /etc/dbus-1/system.d/ofono.conf
 ###
 <policy user="pulse">
   <allow send_destination="org.ofono"/>
 </policy>
 ###
+
 sudo apt install ofono-phonesim
 sudo nano /etc/ofono/phonesim.conf
 ###
@@ -70,18 +130,37 @@ Address=127.0.0.1
 Port=12345
 ###
 
-# test phonesim
-# start
+sudo systemctl restart ofono.service
+
+# start as user
 ofono-phonesim -p 12345 /usr/share/phonesim/default.xml
+# power modem
+dbus-send --print-reply --system --dest=org.ofono /phonesim org.ofono.Modem.SetProperty string:"Powered" variant:boolean:true
+# activate modem
+dbus-send --print-reply --system --dest=org.ofono /phonesim org.ofono.Modem.SetProperty string:"Online" variant:boolean:true
+
+# test phonesim
 # use test script
 git clone git://git.kernel.org/pub/scm/network/ofono/ofono.git
+git checkout 1.21
 cd ofono/test
-./enable-modem
-./online-modem
 ./list-modems
 
-# autostart phonesim
-sudo apt install ofono-phonesim-autostart
+# restart pulseaudio and reconnect headset. Now, HFP should be available
+systemctl --user restart pulseaudio
+systemctl --user status pulseaudio
+
+# verify Handsfree protocol
+sudo bluetoothctl info
+# show 5C:F3:70:9D:FD:56
+
+# connect pods
+
+pacmd list-cards
+
+# git/ofono/test
+# ./dial-number /phonesim 12345
+# ./hangup-all /phonesim
 
 =========================================================
 # FX && noise cancellation

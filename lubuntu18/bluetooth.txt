@@ -3,6 +3,11 @@
 # check folder for .hcd file
 sudo cp BCM20702A1-0b05-17cb.hcd /lib/firmware/brcm/
 
+# disconnect device
+
+sudo modprobe -r btusb
+sudo modprobe btusb
+
 # reconnect device
 
 dmesg
