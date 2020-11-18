@@ -5,8 +5,10 @@
 # version 0.12.5
 # install from deb file
 
-# you may want to:
-# sudo apt install v4l2loopback-utils
+# you may want to install v4l2loopback-utils
+# https://packages.debian.org/sid/all/v4l2loopback-utils/download
+# version 0.12.5
+# install from deb file
 
 # configure options (https://github.com/umlaeute/v4l2loopback#options)
 sudo nano /etc/modprobe.d/v4l2loopback.conf
@@ -26,6 +28,8 @@ sudo modprobe v4l2loopback
 
 # check
 v4l2-ctl --list-devices
+ffmpeg -h encoder=h264_nvenc
+ffmpeg -h decoder=mjpeg_cuvid
 
 # stream
 git clone git@github.com:padand/bootstrap.git
@@ -42,3 +46,33 @@ ffmpeg -v verbose -loglevel debug -hwaccel cuvid -c:v mjpeg_cuvid -i /dev/video0
 
 ffmpeg -loglevel verbose -vsync 1 -r:v 30 -s:v 1280x720 -i /dev/video0 -vf "crop=640:480" -pix_fmt yuv420p -r:v 30 -f v4l2 /dev/video10
 mplayer tv:// -tv driver=v4l2:width=640:height=480:device=/dev/video10:fps=30:outfmt=yuy2
+
+ffmpeg -loglevel verbose -hwaccel cuda -vsync 1 -r:v 30 -s:v 1280x720 -c:v mjpeg_cuvid -i /dev/video0 -vcodec rawvideo -pix_fmt yuv420p -threads 0 -r:v 30 -f v4l2 /dev/video10
+
+ffmpeg -hwaccel nvdec -c:v mjpeg_cuvid -i /dev/video0 -vcodec rawvideo -pix_fmt yuv420p -threads 0 -f v4l2 /dev/video10
+
+ffmpeg -y -loglevel verbose -hwaccel cuvid -c:v mjpeg_cuvid -i /dev/video0 -c:v h264_nvenc test.mp4
+
+ffmpeg -y -loglevel verbose -hwaccel nvdec -crop 120x120x320x320 -c:v mjpeg_cuvid -vsync 1 -r:v 30 -i /dev/video0 -c:v rawvideo -r:v 30 -f v4l2 /dev/video10
+
+ffmpeg -y -loglevel verbose -hwaccel nvdec -crop 120x120x320x320 -c:v mjpeg_cuvid -r:v 30 -i /dev/video0 -an -c:v rawvideo -r:v 30 -vsync cfr -f v4l2 /dev/video10
+
+ffmpeg -loglevel verbose -hwaccel nvdec -c:v h264_cuvid -r:v 25 -vsync 1 -i rtsp://192.168.0.100:8080/h264_pcm.sdp -an -vcodec rawvideo -threads 0 -f v4l2 /dev/video10
+
+
+ffmpeg -loglevel verbose -hwaccel nvdec -c:v h264_cuvid -r:v 25 -vsync 1 -rtsp_transport udp -i rtsp://192.168.0.100:8080/h264_pcm.sdp -vcodec rawvideo -threads 0 -f v4l2 /dev/video10 -f pulse -device mumble_out "astream"
+
+
+ffmpeg -loglevel verbose -hwaccel nvdec -c:v h264_cuvid -r:v 25 -vsync 1 -rtsp_transport udp -i rtsp://192.168.0.100:8080/h264_pcm.sdp -vcodec rawvideo -an -threads 0 -f v4l2 -map 0:v /dev/video10 -f pulse -device phone_out -map 0:a "astream"
+
+ffmpeg -loglevel verbose -hwaccel nvdec -c:v h264_cuvid -r:v 25 -vsync 1 -rtsp_transport udp -i rtsp://192.168.0.100:8080/h264_pcm.sdp -vcodec rawvideo -an -threads 0 -f v4l2 -map 0:v /dev/video10 -f pulse -c:a copy -device phone_out -map 0:a "astream"
+
+ffmpeg -i http://192.168.0.100:8080/audio.opus -vn -threads 0 -f pulse -buffer_duration 20 -device phone_out "astream"
+
+ffmpeg -loglevel verbose -hwaccel nvdec -c:v h264_cuvid -r:v 25 -vsync 1 -rtsp_transport udp -i http://192.168.0.100:8080/video -vcodec rawvideo -an -threads 0 -f v4l2 /dev/video10 -i  http://192.168.0.100:8080/audio.opus -vn -threads 0 -f pulse -buffer_duration 20 -device phone_out "astream"
+
+ffmpeg -loglevel verbose -hwaccel cuvid -hwaccel_output_format cuda -c:v mjpeg_cuvid -crop 120x120x320x320 -i /dev/video0 -c:v h264_nvenc -f v4l2 /dev/video10
+
+ffmpeg -loglevel verbose -hwaccel cuvid -hwaccel_output_format nv12 -c:v mjpeg_cuvid -crop 120x120x320x320 -i /dev/video0 -c:v h264_nvenc -pix_fmt yuv420p -f v4l2 /dev/video10
+
+ffmpeg -vsync 1 -threads 4 -hwaccel cuvid -hwaccel_output_format nv12 -c:v mjpeg_cuvid -crop 120x120x320x320 -i /dev/video0 -c:v h264_nvenc -preset:v llhq -rc:v cbr_ld_hq -b:v 1800k -maxrate:v 1800k -bufsize:v 1800k -r:v 25 -g:v 50 -pix_fmt yuv420p -f v4l2 /dev/video10
