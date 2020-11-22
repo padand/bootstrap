@@ -76,9 +76,12 @@ sudo make install
 cd ..
 git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg/
 cd ffmpeg
-git checkout n4.1.6
-./configure --enable-cuda-sdk --enable-cuvid --enable-nvenc --enable-nonfree --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64
-make -j 8
+# https://github.com/umlaeute/v4l2loopback/issues/130
+git checkout n4.4-dev
+sudo apt install libpulse-dev
+sudo apt install libsdl2-dev
+./configure --enable-ffplay --enable-libpulse --enable-cuda-nvcc --enable-cuvid --enable-nvenc --enable-nonfree --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64
+make -j 4
 # add to path
 
 # test
