@@ -40,9 +40,11 @@ function syncFromTo {
 	umountDevice $2
 }
 
-syncFromTo sda1 sdb1
-syncFromTo sda5 sdb5
+# backup system primary
+#syncFromTo sda1 sdb1
+#syncFromTo sda5 sdb5
 
+# backup system secondary
 #syncFromTo sdb1 sdc1
 #syncFromTo sdb5 sdc2
 
