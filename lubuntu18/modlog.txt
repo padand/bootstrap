@@ -45,3 +45,14 @@ source /etc/environment
 disable touchpad
 
 synclient TouchpadOff=1
+
+=========================================================
+22.11.2020
+
+cd ~/temp
+wget https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtl_nic/rtl8125a-3.fw
+wget https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtl_nic/rtl8168fp-3.fw
+sudo cp rtl8125a-3.fw /lib/firmware/rtl_nic
+sudo cp rtl8168fp-3.fw /lib/firmware/rtl_nic
+sudo update-initramfs -u
+reboot
