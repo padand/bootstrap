@@ -24,6 +24,8 @@ dmesg | grep hda-jack-retask
 
 Android audio stream
 
+sudo add-apt-repository ppa:mumble/release
+sudo apt update
 sudo apt install mumble mumble-server
 sudo dpkg-reconfigure mumble-server
 # set a password, or configure max 2 users on server
