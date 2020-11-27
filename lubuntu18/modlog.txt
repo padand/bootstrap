@@ -56,3 +56,17 @@ sudo cp rtl8125a-3.fw /lib/firmware/rtl_nic
 sudo cp rtl8168fp-3.fw /lib/firmware/rtl_nic
 sudo update-initramfs -u
 reboot
+
+=========================================================
+27.11.2020
+
+sudo nano /etc/default/grub
+###
+# change GRUB_TIMEOUT_STYLE from hidden to menu
+# remove pcie_aspm=off
+# change GRUB_DEFAULT from 0 to gnulinux-simple-90401f1c-6094-488b-bd9f-efbadeb78245
+# change GRUB_TIMEOUT from 0 to 2
+# add GRUB_OS_PROBER_SKIP_LIST="UUID1@/dev/sdb1 UUID2@/dev/sdc1"
+###
+
+sudo update-grub
