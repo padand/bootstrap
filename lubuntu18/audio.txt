@@ -21,6 +21,29 @@ reboot
 dmesg | grep hda-jack-retask
 
 =========================================================
+# Compressor
+
+sudo apt install swh-plugins
+
+sudo nano /etc/pulse/default.pa
+###
+# The parameters (the control=1,1.5,401,-30,20,5,12 for example) for this compressor are described in Steve Harris' LADSPA Plugin Docs:
+# RMS/peak: The balance between the RMS and peak envelope followers.
+#           RMS is generally better for subtle, musical compression and peak is better for heavier, fast compression and percussion.
+# Attack time (ms): The attack time in milliseconds.
+# Release time (ms): The release time in milliseconds.
+# Threshold level (dB): The point at which the compressor will start to kick in.
+# Ratio (1:n): The gain reduction ratio used when the signal level exceeds the threshold.
+# Knee radius (dB): The distance from the threshold where the knee curve starts.
+# Makeup gain (dB): Controls the gain of the makeup input signal in dB's.
+# Amplitude (dB): The level of the input signal, in decibels.
+# Gain reduction (dB): The degree of gain reduction applied to the input signal, in decibels.
+load-module module-ladspa-sink sink_name=compressor plugin=sc4_1882 label=sc4 control=1,1.5,401,-30,20,5,12
+###
+
+systemctl --user restart pulseaudio
+
+=========================================================
 
 Android audio stream
 
