@@ -5,15 +5,20 @@ set -e
 # Set default params
 dry=true
 debug=false
+target="primary"
 
 # Parse command line arguments
 while [[ "$#" -gt 0 ]]; do
-    case $1 in
-        -v) debug=true ;;
-        -y) dry=false ;;
-    esac
-    shift
+	case $1 in
+		-v) debug=true ;;
+		-y) dry=false ;;
+		-t) target="$2"; shift ;;
+		*) echo "Unknown parameter passed: $1"; exit 1 ;;
+	esac
+	shift
 done
+
+echo "Target: $target; sfecify another target using: -t target"
 
 command_prefix="echo RUN -> "
 if [[ "$dry" == false ]]; then
@@ -77,13 +82,14 @@ function syncFromTo {
 	umountDevice $to
 }
 
-# backup system primary
-syncFromTo sda1 sdb1 delete
-syncFromTo sda5 sdb5 delete
-
-# backup system secondary
-syncFromTo sdb1 sdc1 delete
-syncFromTo sdb5 sdc2 delete
-
-# TODO: option to choose target at runtime: primary system, secondary system, primary storage, secondary storage
-
+case "$target" in
+	"primary")
+		syncFromTo sda1 sdb1 delete
+		syncFromTo sda5 sdb5 delete
+		;;
+	"secondary")
+		syncFromTo sdb1 sdc1 delete
+		syncFromTo sdb5 sdc2 delete
+		;;
+	*) echo "Unknown target: $target"; exit 1 ;;
+esac
