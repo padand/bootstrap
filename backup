@@ -3,45 +3,73 @@
 set -e
 #set -x
 
+do=$1
+
+dry=true
+if [[ $do == "do" ]]; then
+	dry=false
+fi;
+command="echo rsync"
+if [[ "$dry" == false ]]; then
+	read -n 1 -p "This is not a dry run! Type y to continue: " confirm
+	if [[ "$confirm" != "y" ]]; then
+		exit 0
+	fi;
+	command="rsync"
+else
+	echo "This is a dry run; to run the real deal, type \"do\" after the command"
+fi;
+
 function mountDevice {
-	mkdir -p /mnt/$1
-	if [[ $(mount | grep /mnt/$1) ]]; then
-		echo "$1 already mounted"
+	device=$1
+	mkdir -p /mnt/$device
+	if [[ $(mount | grep /mnt/$device) ]]; then
+		echo "$device already mounted"
 	else
-		mount /dev/$1 /mnt/$1
-		echo "$1 was mounted"
+		mount /dev/$device /mnt/$device
+		echo "$device was mounted"
 	fi;
 }
 
 function umountDevice {
-	if [[ $(mount | grep /mnt/$1) ]]; then
-		umount /mnt/$1
-		rmdir /mnt/$1
-		echo "$1 was umounted"
+	device=$1
+	if [[ $(mount | grep /mnt/$device) ]]; then
+		umount /mnt/$device
+		rmdir /mnt/$device
+		echo "$device was umounted"
 	else
-		echo "$1 is not mounted"
+		echo "$device is not mounted"
 	fi;
 }
 
 function syncFromTo {
-	umountDevice $1
-	umountDevice $2
-	mountDevice $1
-	mountDevice $2
+	from=$1
+	to=$2
+	opts=$3
+	umountDevice $from
+	umountDevice $to
+	mountDevice $from
+	mountDevice $to
 	# TODO: maybe mount source device as read only
 
-	echo "start sync $1 to $2"
-	rsync -axHAWXS --numeric-ids --info=progress2 \
-	--delete --delete-excluded --exclude='/.gvfs/' --exclude="/mnt/" \
-	/mnt/$1/ /mnt/$2/
-	echo "done sync $1 to $2"
+	echo "start sync $from to $to"
+	if [[ $opts == "delete" ]]; then
+		$command -axHAWXS --numeric-ids --info=progress2 \
+		--delete --delete-excluded --exclude='/.gvfs/' --exclude="/mnt/" \
+		/mnt/$from/ /mnt/$to/
+	else
+		$command -axHAWXS --numeric-ids --info=progress2 \
+		--delete-excluded --exclude='/.gvfs/' --exclude="/mnt/" \
+		/mnt/$from/ /mnt/$to/
+	fi;
+	echo "done sync $from to $to"
 
-	umountDevice $1
-	umountDevice $2
+	umountDevice $from
+	umountDevice $to
 }
 
 # backup system primary
-#syncFromTo sda1 sdb1
+syncFromTo sda1 sdb1
 #syncFromTo sda5 sdb5
 
 # backup system secondary
