@@ -5,7 +5,12 @@ set -e
 # Set default params
 dry=true
 debug=false
-target="primary"
+target="system"
+
+function error {
+	echo "$@"
+	exit 1
+}
 
 # Parse command line arguments
 while [[ "$#" -gt 0 ]]; do
@@ -13,7 +18,7 @@ while [[ "$#" -gt 0 ]]; do
 		-v) debug=true ;;
 		-y) dry=false ;;
 		-t) target="$2"; shift ;;
-		*) echo "Unknown parameter passed: $1"; exit 1 ;;
+		*) error "Unknown parameter passed: $1" ;;
 	esac
 	shift
 done
@@ -57,9 +62,18 @@ function umountDevice {
 }
 
 function syncFromTo {
-	from=$1
-	to=$2
+	from_label=$1
+	to_label=$2
 	opts=$3
+	from=$(blkid --label $from_label | sed 's|/dev/||')
+	if [ -z "$from" ]; then
+		error "Device with label $from_label was not found"
+	fi;
+	to=$(blkid --label $to_label | sed 's|/dev/||')
+	if [ -z "$to" ]; then
+		error "Device with label $to_label was not found"
+	fi;
+
 	umountDevice $from
 	umountDevice $to
 	mountDevice $from
@@ -83,13 +97,15 @@ function syncFromTo {
 }
 
 case "$target" in
-	"primary")
-		syncFromTo sda1 sdb1 delete
-		syncFromTo sda5 sdb5 delete
+	"system")
+		syncFromTo root bkp_root delete
+		syncFromTo home bkp_home delete
 		;;
-	"secondary")
-		syncFromTo sdb1 sdc1 delete
-		syncFromTo sdb5 sdc2 delete
+	"storage")
+		syncFromTo storage bkp_storage delete
 		;;
-	*) echo "Unknown target: $target"; exit 1 ;;
+	"backup")
+		syncFromTo backup bkp_backup delete
+		;;
+	*) error "Unknown target: $target" ;;
 esac
