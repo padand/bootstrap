@@ -107,5 +107,12 @@ case "$target" in
 	"backup")
 		syncFromTo backup bkp_backup delete
 		;;
+	"all")
+		# TODO: avoid repeating commands here; maybe use an array of targets, specified as comma separated
+		syncFromTo root bkp_root delete
+		syncFromTo home bkp_home delete
+		syncFromTo storage bkp_storage delete
+		syncFromTo backup bkp_backup delete
+		;;
 	*) error "Unknown target: $target" ;;
 esac
