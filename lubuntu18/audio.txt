@@ -38,10 +38,30 @@ sudo nano /etc/pulse/default.pa
 # Makeup gain (dB): Controls the gain of the makeup input signal in dB's.
 # Amplitude (dB): The level of the input signal, in decibels.
 # Gain reduction (dB): The degree of gain reduction applied to the input signal, in decibels.
-load-module module-ladspa-sink sink_name=compressor plugin=sc4_1882 label=sc4 control=1,1.5,401,-30,20,5,12
+load-module module-ladspa-sink sink_name=compressor plugin=sc4_1882 label=sc4 control=1,1.5,401,-30,5,5,12
 ###
 
 systemctl --user restart pulseaudio
+
+=========================================================
+# Volume shortcuts
+
+sudo nano ~/.config/openbox/lubuntu-rc.xml
+###
+    <!-- Keybinding for Volume management -->
+    <!-- Win + "-" -->
+    <keybind key="W-0x52">
+      <action name="Execute">
+        <command>amixer -D pulse sset Master 5%- unmute</command>
+      </action>
+    </keybind>
+    <!-- Win + "+" -->
+    <keybind key="W-0x56">
+      <action name="Execute">
+        <command>amixer -D pulse sset Master 5%+ unmute</command>
+      </action>
+    </keybind>
+###
 
 =========================================================
 
