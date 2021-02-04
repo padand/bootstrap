@@ -1,44 +1,53 @@
 #!/bin/bash
 
 set -e
-#set -x
 
-do=$1
-
+# Set default params
 dry=true
-if [[ $do == "do" ]]; then
-	dry=false
-fi;
-command="echo rsync"
+debug=false
+
+# Parse command line arguments
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -v) debug=true ;;
+        -y) dry=false ;;
+    esac
+    shift
+done
+
+command_prefix="echo RUN -> "
 if [[ "$dry" == false ]]; then
 	read -n 1 -p "This is not a dry run! Type y to continue: " confirm
 	if [[ "$confirm" != "y" ]]; then
 		exit 0
 	fi;
-	command="rsync"
+	command_prefix=""
 else
-	echo "This is a dry run; to run the real deal, type \"do\" after the command"
+	echo "This is a dry run; to run the real deal, add command argument: -y"
+fi;
+
+if [[ "$debug" == true ]]; then
+	echo "Enabling debug"
+	set -x
+else
+	echo "Debug disabled; to enable, add command argument: -v"
 fi;
 
 function mountDevice {
 	device=$1
-	mkdir -p /mnt/$device
+	$command_prefix mkdir -p /mnt/$device
 	if [[ $(mount | grep /mnt/$device) ]]; then
 		echo "$device already mounted"
 	else
-		mount /dev/$device /mnt/$device
-		echo "$device was mounted"
+		$command_prefix mount /dev/$device /mnt/$device
 	fi;
 }
 
 function umountDevice {
 	device=$1
 	if [[ $(mount | grep /mnt/$device) ]]; then
-		umount /mnt/$device
-		rmdir /mnt/$device
-		echo "$device was umounted"
-	else
-		echo "$device is not mounted"
+		$command_prefix umount /mnt/$device
+		$command_prefix rmdir /mnt/$device
 	fi;
 }
 
@@ -54,11 +63,11 @@ function syncFromTo {
 
 	echo "start sync $from to $to"
 	if [[ $opts == "delete" ]]; then
-		$command -axHAWXS --numeric-ids --info=progress2 \
+		$command_prefix rsync -axHAWXS --numeric-ids --info=progress2 \
 		--delete --delete-excluded --exclude='/.gvfs/' --exclude="/mnt/" \
 		/mnt/$from/ /mnt/$to/
 	else
-		$command -axHAWXS --numeric-ids --info=progress2 \
+		$command_prefix rsync -axHAWXS --numeric-ids --info=progress2 \
 		--delete-excluded --exclude='/.gvfs/' --exclude="/mnt/" \
 		/mnt/$from/ /mnt/$to/
 	fi;
@@ -69,14 +78,12 @@ function syncFromTo {
 }
 
 # backup system primary
-syncFromTo sda1 sdb1
-#syncFromTo sda5 sdb5
+syncFromTo sda1 sdb1 delete
+syncFromTo sda5 sdb5 delete
 
 # backup system secondary
-#syncFromTo sdb1 sdc1
-#syncFromTo sdb5 sdc2
+syncFromTo sdb1 sdc1 delete
+syncFromTo sdb5 sdc2 delete
 
-# TODO: option to sync without delete, needed for storage
-# TODO: option to define pipelines, eg: sdb5-sdc2,delete; sda4-sdb4,keep
 # TODO: option to choose target at runtime: primary system, secondary system, primary storage, secondary storage
 
