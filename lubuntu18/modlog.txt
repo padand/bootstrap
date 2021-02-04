@@ -70,3 +70,22 @@ sudo nano /etc/default/grub
 ###
 
 sudo update-grub
+
+=========================================================
+30.01.2021
+
+sudo nano ~/.config/openbox/lubuntu-rc.xml
+###
+      <!-- Blender requires following shortcuts
+      <mousebind button="A-Left" action="Press">
+        <action name="Focus"/>
+        <action name="Raise"/>
+      </mousebind>
+      <mousebind button="A-Left" action="Click">
+        <action name="Unshade"/>
+      </mousebind>
+      <mousebind button="A-Left" action="Drag">
+        <action name="Move"/>
+      </mousebind>
+      -->
+###
