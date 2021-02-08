@@ -23,7 +23,7 @@ while [[ "$#" -gt 0 ]]; do
 	shift
 done
 
-echo "Target: $target; sfecify another target using: -t target"
+echo "Target: $target; specify another target using: -t target"
 
 command_prefix="echo RUN -> "
 if [[ "$dry" == false ]]; then
@@ -107,12 +107,15 @@ case "$target" in
 	"backup")
 		syncFromTo backup bkp_backup delete
 		;;
-	"all")
+	"x")
 		# TODO: avoid repeating commands here; maybe use an array of targets, specified as comma separated
 		syncFromTo root bkp_root delete
 		syncFromTo home bkp_home delete
 		syncFromTo storage bkp_storage delete
 		syncFromTo backup bkp_backup delete
+		;;
+	"w")
+		syncFromTo w bkp_w delete
 		;;
 	*) error "Unknown target: $target" ;;
 esac
